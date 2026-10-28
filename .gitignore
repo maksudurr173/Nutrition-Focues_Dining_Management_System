@@ -55,4 +55,4 @@ dkms.conf
 *.dwo
 
 #data files
-.dat
+*.dat
