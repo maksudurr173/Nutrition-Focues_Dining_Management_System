@@ -6,6 +6,7 @@ float calculateBMI(float weight, float height) {
     return weight / (height * height);
 }
 
+//return type -> enum BMICategory, fun name = getBMICategory
 enum BMICategory getBMICategory(float bmi) {
     if (bmi < 18.5) {
         return UNDERWEIGHT;
@@ -70,12 +71,17 @@ void printActivityLevel(enum ActivityLevel act) {
 }
 
 int loadStudents(struct Student **students) {
+
+    //Allows the function to update the caller's pointer -> struct Student **students
+    //Besides, if ** not used, the data will not be saved at the allocated memory of struct variable 
     FILE *file;
     int count;
 
     file = fopen(STUDENT_FILE, "rb");
     if (file == NULL) {
-        *students = malloc(sizeof(struct Student));
+        
+        //This functn can be failed as file
+        *students = malloc(sizeof(struct Student));  //Not neccessary
         return 0;
     }
 
@@ -99,12 +105,14 @@ int loadStudents(struct Student **students) {
 
     if (fread(*students, sizeof(struct Student), count, file) != (size_t)count) {
         fclose(file);
+
         free(*students);
         *students = malloc(sizeof(struct Student));
         return 0;
     }
 
     fclose(file);
+    //This will return the no. students data successfully read
     return count;
 }
 
@@ -144,13 +152,16 @@ int loadMealPlans(struct MealPlan **plans) {
 
     *plans = malloc(count * sizeof(struct MealPlan));
     if (*plans == NULL) {
+        //if count=0, then it will happen
         fclose(file);
         return 0;
     }
 
     if (fread(*plans, sizeof(struct MealPlan), count, file) != (size_t)count) {
         fclose(file);
+
         free(*plans);
+
         *plans = malloc(sizeof(struct MealPlan));
         return 0;
     }
@@ -223,13 +234,13 @@ void saveBudgetRecords(struct BudgetRecord *records, int count) {
 }
 
 int findStudentByRoll(struct Student *students, int count, int roll, int month, int year) {
-    int i;
-    for (i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         if (students[i].roll == roll && students[i].month == month && students[i].year == year) {
             return i;
         }
     }
     return -1;
+    //Anything can be returned except 0
 }
 
 void studentSection(void) {
@@ -263,12 +274,15 @@ void studentSection(void) {
     if (existing >= 0) {
         printf("\nYou already submitted data for this month.\n");
         printf("Do you want to update? (1 = Yes, 0 = No): ");
+
         scanf("%d", &choice);
         if (choice != 1) {
             printf("No changes made.\n");
-            saveStudents(students, studentCount);
+            saveStudents(students, studentCount); //Optional, not necessary
             free(students);
+            //Exiting from the function safely
             return;
+
         }
 
         printf("Enter your Height in meters: ");
@@ -310,6 +324,7 @@ void studentSection(void) {
         tdee = calculateTDEE(students[existing].weight, students[existing].height, students[existing].activity);
         students[existing].tdee = tdee;
 
+        //Calculation Part
         students[existing].ideal_protein = (tdee * 0.30) / 4.0;
         students[existing].ideal_carbs = (tdee * 0.50) / 4.0;
         students[existing].ideal_fat = (tdee * 0.20) / 9.0;
@@ -382,10 +397,14 @@ void studentSection(void) {
         printf("Height: %.2f m\n", students[existing].height);
         printf("Weight: %.2f kg\n", students[existing].weight);
         printf("BMI: %.2f (", students[existing].bmi);
+
         printBMICategory(students[existing].category);
+        
         printf(")\n");
         printf("Activity: ");
+        
         printActivityLevel(students[existing].activity);
+        
         printf("\n");
         printf("TDEE: %.0f kcal/day\n", students[existing].tdee);
         printf("Ideal Protein: %.1f g/day\n", students[existing].ideal_protein);
@@ -425,8 +444,10 @@ void mealManagerSection(void) {
     float avgProtein, avgCarbs, avgFat;
     int existingPlan;
 
-    printf("\n===== MEAL MANAGER SECTION =====\n");
+    printf("\n       MEAL MANAGER SECTION \n");
     printf("Enter Password: ");
+
+    //White space used in scanf for avoiding accidental space before entering password
     scanf(" %[^\n]", password);
 
     if (strcmp(password, MEAL_PASS) != 0) {
@@ -548,6 +569,7 @@ void mealManagerSection(void) {
     printf("\nTotal Lunch Nutrition Needed:\n");
 
     found = (existingPlan >= 0) ? existingPlan : planCount - 1;
+
     printf("  Protein: %.1f g\n", plans[found].lunch_protein);
     printf("  Carbs: %.1f g\n", plans[found].lunch_carbs);
     printf("  Fat: %.1f g\n", plans[found].lunch_fat);
@@ -599,6 +621,7 @@ void showAllMealRecords(void) {
     free(plans);
 }
 
+//31 Variables
 void diningManagerSection(void) {
     char password[50];
     struct MealPlan *plans;
@@ -619,12 +642,17 @@ void diningManagerSection(void) {
     int countCurrent, countPrev;
     float bmiChange;
     int checkQuarter;
+    
+    //sum for the current previous period(3 months)
     float quarterAvgCurrent, quarterAvgPrev;
+    
+    //Count how many monthly records are found for each period
     int qCount1, qCount2;
 
     printf("\n     DINING MANAGER SECTION   \n");
     printf("Enter Password: ");
     scanf(" %[^\n]", password);
+
 
     if (strcmp(password, DINING_PASS) != 0) {
         printf("Wrong password. Access denied.\n");
@@ -680,6 +708,7 @@ void diningManagerSection(void) {
     printf("  Total Fat: %.1f g\n", totalDailyNutritionFat);
 
     printf("\nEnter budget per student per month (BDT): ");
+    
     scanf("%f", &budgetPerStudent);
 
     if (budgetPerStudent <= 0) {
@@ -690,11 +719,14 @@ void diningManagerSection(void) {
         return;
     }
 
+    //plans is a pointer; points to an array of struct MealPlan objects
     dailyBudget = (budgetPerStudent * plans[mealPlanIndex].student_count) / 30.0;
 
     printf("Total daily budget for all students: %.2f BDT\n", dailyBudget);
 
     printf("\nEnter number of food items: ");
+    
+    //Input hwo many food items will be registered
     scanf("%d", &foodCount);
 
     if (foodCount <= 0 || foodCount > MAX_FOODS) {
@@ -706,6 +738,8 @@ void diningManagerSection(void) {
     }
 
     existingRecord = -1;
+
+    //This loop will measure how many records are saved/loaded successfully
     for (i = 0; i < recordCount; i++) {
         if (records[i].month == month && records[i].year == year) {
             existingRecord = i;
@@ -713,6 +747,7 @@ void diningManagerSection(void) {
     }
 
     if (existingRecord < 0) {
+        //Resizing the memory for enough space to store input
         temp = realloc(records, (recordCount + 1) * sizeof(struct BudgetRecord));
         if (temp == NULL) {
             printf("Memory allocation failed.\n");
@@ -721,6 +756,7 @@ void diningManagerSection(void) {
             free(students);
             return;
         }
+        //if not NULL, then ...
         records = temp;
         existingRecord = recordCount;
         recordCount++;
@@ -731,20 +767,27 @@ void diningManagerSection(void) {
     records[existingRecord].budget_per_student = budgetPerStudent;
     records[existingRecord].food_count = foodCount;
 
+    //Now, Give input of info of food items
     for (i = 0; i < foodCount; i++) {
         printf("\n    Food Item %d   \n", i + 1);
+
         printf("Name: ");
         scanf(" %[^\n]", records[existingRecord].foods[i].name);
+        
         printf("Price per kg (BDT): ");
         scanf("%f", &records[existingRecord].foods[i].price_per_kg);
+        
         printf("Protein per 100g: ");
         scanf("%f", &records[existingRecord].foods[i].protein_per_100g);
+        
         printf("Carbs per 100g: ");
         scanf("%f", &records[existingRecord].foods[i].carbs_per_100g);
+        
         printf("Fat per 100g: ");
         scanf("%f", &records[existingRecord].foods[i].fat_per_100g);
     }
 
+    //Checking if the food itmes' budget meets daily budget or not
     printf("\n    Daily Food Distribution (fitting budget) \n");
 
     totalFoodCost = 0;
@@ -755,9 +798,15 @@ void diningManagerSection(void) {
         float kgCanBuy;
         float proteinFromFood, carbsFromFood, fatFromFood;
 
+        //foodCount - i ; as the share budget is measured for each food item
+        //Besides, it represents the number of foods left to process, including the current food
+        
+        //If just foodCount is used, the sharebudget will be divided by total food items each time
+        //Besdies, the remaining budget is changing after every loop 
         shareBudget = remainingBudget / (foodCount - i);
         kgCanBuy = shareBudget / records[existingRecord].foods[i].price_per_kg;
 
+        //10 multiply for 1kg to 100gm conversion
         proteinFromFood = kgCanBuy * 10.0 * records[existingRecord].foods[i].protein_per_100g;
         carbsFromFood = kgCanBuy * 10.0 * records[existingRecord].foods[i].carbs_per_100g;
         fatFromFood = kgCanBuy * 10.0 * records[existingRecord].foods[i].fat_per_100g;
@@ -778,9 +827,12 @@ void diningManagerSection(void) {
     printf("Daily Budget: %.2f BDT\n", dailyBudget);
 
     if (totalFoodCost <= dailyBudget) {
+        
+        // Something needs to be modified here, any extra info?
         printf("Status: Within budget\n");
     }
-    else {
+    else { 
+        //Additionally mentioning how much taka is excessive
         printf("Status: Over budget by %.2f BDT/day\n", totalFoodCost - dailyBudget);
     }
 
@@ -796,12 +848,13 @@ void diningManagerSection(void) {
         avgBmiCurrent = avgBmiCurrent / countCurrent;
     }
 
+    //records -> pointer to an array of structure
     records[existingRecord].avg_bmi = avgBmiCurrent;
 
     avgBmiPrev = 0;
     countPrev = 0;
 
-    if (month > 1) {
+    if (month > 1) {   //For February to December
         for (i = 0; i < studentCount; i++) {
             if (students[i].month == month - 1 && students[i].year == year) {
                 avgBmiPrev += students[i].bmi;
@@ -809,7 +862,7 @@ void diningManagerSection(void) {
             }
         }
     }
-    else {
+    else { //For January ; Sepcial case as previous month is December of previous year
         for (i = 0; i < studentCount; i++) {
             if (students[i].month == 12 && students[i].year == year - 1) {
                 avgBmiPrev += students[i].bmi;
@@ -818,25 +871,36 @@ void diningManagerSection(void) {
         }
     }
 
+    //Now, avgBMIprev is calculated for all students
     if (countPrev > 0) {
-        avgBmiPrev = avgBmiPrev / countPrev;
+        
+        //dividing by count so that is becomes avgBMWPrev for each student and updated the data
+        avgBmiPrev = avgBmiPrev / countPrev; 
+        
         bmiChange = ((avgBmiCurrent - avgBmiPrev) / avgBmiPrev) * 100.0;
         records[existingRecord].bmi_change_percent = bmiChange;
 
-        printf("\n--- Monthly BMI Analysis ---\n");
+        printf("\n     Monthly BMI Analysis \n");
         printf("Current month avg BMI: %.2f\n", avgBmiCurrent);
         printf("Previous month avg BMI: %.2f\n", avgBmiPrev);
 
         if (bmiChange >= 0) {
+
+            //Double % for printing %
+            //Single % will ask format specifier; otherwise program crash 
             printf("BMI Change: +%.2f%%\n", bmiChange);
         }
         else {
+            //Negative floating number has already a minus sign before
+            //So, no need of extra -
             printf("BMI Change: %.2f%%\n", bmiChange);
         }
     }
     else {
+
         records[existingRecord].bmi_change_percent = 0;
-        printf("\n--- Monthly BMI Analysis ---\n");
+        
+        printf("\n    Monthly BMI Analysis\n");
         printf("Current month avg BMI: %.2f\n", avgBmiCurrent);
         printf("No previous month data for comparison.\n");
     }
@@ -850,10 +914,14 @@ void diningManagerSection(void) {
 
         for (i = 0; i < recordCount; i++) {
             if (records[i].year == year) {
+                
+                //calculating current quarter avg BMI of each student
                 if (records[i].month >= month - 2 && records[i].month <= month) {
                     quarterAvgCurrent += records[i].avg_bmi;
                     qCount1++;
                 }
+
+                //calculating 1 previous quarter ave BMI of each student
                 if (records[i].month >= month - 5 && records[i].month <= month - 3) {
                     quarterAvgPrev += records[i].avg_bmi;
                     qCount2++;
@@ -863,16 +931,24 @@ void diningManagerSection(void) {
 
         if (qCount1 == 3 && qCount2 == 3) {
             checkQuarter = 1;
+
+            //Calculating each month avg of each quarter avg BMI of each student
             quarterAvgCurrent = quarterAvgCurrent / 3.0;
             quarterAvgPrev = quarterAvgPrev / 3.0;
         }
     }
 
     if (checkQuarter == 1) {
+
         float qChange;
+
+        //Ideal BMI for 22 years old prople
         float normalBmi = 22.0;
+
+        //For measuring BMI diff and comparing previous and current avg BMI
         float currentGap, prevGap;
 
+        //Percentage of avg BMI of each student
         qChange = ((quarterAvgCurrent - quarterAvgPrev) / quarterAvgPrev) * 100.0;
 
         printf("\n    3-Month Quarter Analysis\n");
@@ -880,6 +956,8 @@ void diningManagerSection(void) {
         printf("Previous 3-month avg BMI: %.2f\n", quarterAvgPrev);
 
         if (qChange >= 0) {
+
+            //%% for dsiplaying % 
             printf("Quarter BMI Change: +%.2f%%\n", qChange);
         }
         else {
@@ -888,15 +966,21 @@ void diningManagerSection(void) {
 
         currentGap = quarterAvgCurrent - normalBmi;
         if (currentGap < 0) {
+            
+            //To remove the - sign, making it always +ve
             currentGap = -currentGap;
         }
         prevGap = quarterAvgPrev - normalBmi;
         if (prevGap < 0) {
+
+            //To remove the - sign, making it always +ve
             prevGap = -prevGap;
         }
 
         if (currentGap > prevGap) {
+
             float suggestedIncrease;
+            
             suggestedIncrease = budgetPerStudent * (currentGap - prevGap) / normalBmi;
 
             printf("\nWARNING: Avg BMI is moving away from normal range!\n");
@@ -910,9 +994,12 @@ void diningManagerSection(void) {
     }
 
     saveBudgetRecords(records, recordCount);
+    
+    //Free the unused allocated memory
     free(plans);
     free(records);
     free(students);
+
     printf("Budget data saved.\n");
 }
 
@@ -924,6 +1011,8 @@ void showAllBudgetRecords(void) {
     char password[50];
 
     printf("\nEnter Dining Manager Password: ");
+
+    //white space betn " and % For avoiding accidental space before entering pass
     scanf(" %[^\n]", password);
 
     if (strcmp(password, DINING_PASS) != 0) {
@@ -939,9 +1028,9 @@ void showAllBudgetRecords(void) {
         return;
     }
 
-    printf("\n===== ALL BUDGET RECORDS =====\n");
+    printf("\n      ALL BUDGET RECORDS \n");
     for (i = 0; i < recordCount; i++) {
-        printf("\n--- Record %d: %d/%d ---\n", i + 1, records[i].month, records[i].year);
+        printf("\n    Record %d: %d/%d \n", i + 1, records[i].month, records[i].year);
         printf("Budget per student: %.2f BDT\n", records[i].budget_per_student);
         printf("Avg BMI: %.2f\n", records[i].avg_bmi);
         printf("BMI Change: %.2f%%\n", records[i].bmi_change_percent);

@@ -62,7 +62,7 @@ struct Student {
 };
 
 
-//Meal info; 13 points
+//Meal info; 13 variables
 struct MealPlan {
     int month;
     int year;
@@ -85,6 +85,7 @@ struct MealPlan {
 
 
 //these are for each hall's food availability
+//5 variables
 struct FoodItem {
     char name[50];
     float price_per_kg;
@@ -93,7 +94,7 @@ struct FoodItem {
     float fat_per_100g;
 };
 
-//Calculating 
+//8 variables  
 struct BudgetRecord {
     int month;
     int year;
@@ -132,4 +133,5 @@ int loadMealPlans(struct MealPlan **plans);
 void saveMealPlans(struct MealPlan *plans, int count);
 
 
+//Ending the conditional block here by writing #endif
 #endif
